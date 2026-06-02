@@ -31,13 +31,13 @@ export default function Home() {
   return (
     <div className="container">
       <Head>
-        <title>Frontend-Backend-Project</title>
+        <title>AWS ECS Fargate Full-Stack Application</title>
         <meta name="description" content="DevOps Assignment with FastAPI and Next.js" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
-        <h1>Frontend-Backend-Project</h1>
+        <h1>AWS ECS Fargate Full-Stack Application</h1>
         <div className="status">
           <p>Status: <span className={status.includes('connected') ? 'success' : 'error'}>{status}</span></p>
         </div>
