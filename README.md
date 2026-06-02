@@ -1,125 +1,291 @@
-# DevOps Assignment
+# AWS ECS Fargate Full-Stack Application
 
-This project consists of a FastAPI backend and a Next.js frontend that communicates with the backend.
+A production-style full-stack application deployed on AWS using Infrastructure as Code (Terraform), containerized with Docker, and orchestrated using Amazon ECS Fargate.
+
+## Project Overview
+
+This project demonstrates the deployment of a modern full-stack application consisting of:
+
+* **Frontend:** Next.js
+* **Backend:** FastAPI
+* **Containerization:** Docker
+* **Container Registry:** Amazon ECR
+* **Orchestration:** Amazon ECS Fargate
+* **Load Balancing:** Application Load Balancer (ALB)
+* **Infrastructure as Code:** Terraform
+* **Logging:** Amazon CloudWatch
+* **State Management:** Amazon S3 + DynamoDB
+
+The goal of this project was to build and deploy a scalable cloud-native application while following DevOps best practices.
+
+---
+
+## Architecture
+
+```text
+Internet
+    │
+    ▼
+Application Load Balancer (ALB)
+    │
+    ├── /                 → Frontend (Next.js)
+    │
+    └── /api/*            → Backend (FastAPI)
+
+─────────────────────────────────────────
+
+Frontend Service
+    ├── ECS Fargate
+    ├── Docker Container
+    └── Amazon ECR
+
+Backend Service
+    ├── ECS Fargate
+    ├── Docker Container
+    └── Amazon ECR
+
+─────────────────────────────────────────
+
+Infrastructure
+    ├── Terraform
+    ├── Amazon VPC
+    ├── Public Subnets
+    ├── Internet Gateway
+    ├── Route Tables
+    ├── Security Groups
+    └── CloudWatch Logs
+
+Terraform State
+    ├── Amazon S3
+    └── DynamoDB Lock Table
+```
+
+---
+
+## Features
+
+### Frontend
+
+* Built using Next.js
+* Uses Axios to communicate with backend APIs
+* Health-check verification before loading data
+* Environment-based API configuration
+
+### Backend
+
+* Built using FastAPI
+* REST API endpoints
+* Health-check endpoint
+* Containerized deployment
+
+### Infrastructure
+
+* Infrastructure provisioned using Terraform
+* ECS Fargate serverless containers
+* Application Load Balancer routing
+* CloudWatch logging
+* Remote Terraform state storage
+
+---
+
+## AWS Services Used
+
+| Service                   | Purpose                                    |
+| ------------------------- | ------------------------------------------ |
+| Amazon ECS Fargate        | Run containers without managing servers    |
+| Amazon ECR                | Store Docker images                        |
+| Application Load Balancer | Route traffic between frontend and backend |
+| Amazon VPC                | Networking                                 |
+| Amazon CloudWatch         | Logs and monitoring                        |
+| Amazon S3                 | Terraform remote state                     |
+| Amazon DynamoDB           | Terraform state locking                    |
+| IAM                       | ECS execution roles and permissions        |
+
+---
 
 ## Project Structure
 
-```
-.
-├── backend/               # FastAPI backend
+```text
+frontend-backend-project/
+
+├── backend/
 │   ├── app/
-│   │   └── main.py       # Main FastAPI application
-│   └── requirements.txt    # Python dependencies
-└── frontend/              # Next.js frontend
-    ├── pages/
-    │   └── index.js     # Main page
-    ├── public/            # Static files
-    └── package.json       # Node.js dependencies
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── frontend/
+│   ├── pages/
+│   ├── package.json
+│   └── Dockerfile
+│
+├── infrastructure/
+│   └── aws/
+│       └── dev/
+│           ├── backend.tf
+│           ├── provider.tf
+│           ├── iam.tf
+│           └── main.tf
+│
+└── README.md
 ```
 
-## Prerequisites
+---
 
-- Python 3.8+
-- Node.js 16+
-- npm or yarn
+## Deployment Workflow
 
-## Backend Setup
+### 1. Backend Deployment
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Create a virtual environment (recommended):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Run the FastAPI server:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-   The backend will be available at `http://localhost:8000`
-
-## Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
-
-3. Configure the backend URL (if different from default):
-   - Open `.env.local`
-   - Update `NEXT_PUBLIC_API_URL` with your backend URL
-   - Example: `NEXT_PUBLIC_API_URL=https://your-backend-url.com`
-
-4. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-   The frontend will be available at `http://localhost:3000`
-
-## Changing the Backend URL
-
-To change the backend URL that the frontend connects to:
-
-1. Open the `.env.local` file in the frontend directory
-2. Update the `NEXT_PUBLIC_API_URL` variable with your new backend URL
-3. Save the file
-4. Restart the Next.js development server for changes to take effect
-
-Example:
-```
-NEXT_PUBLIC_API_URL=https://your-new-backend-url.com
+```bash
+docker build -t devops-backend .
+docker push <ecr-backend-repository>
 ```
 
-## For deployment:
-   ```bash
-   npm run build
-   # or
-   yarn build
-   ```
+Deploy using Terraform:
 
-   AND
+```bash
+terraform init
+terraform plan
+terraform apply
+```
 
-   ```bash
-   npm run start
-   # or
-   yarn start
-   ```
+---
 
-   The frontend will be available at `http://localhost:3000`
+### 2. Frontend Deployment
 
-## Testing the Integration
+```bash
+docker build -t frontend-app .
+docker push <ecr-frontend-repository>
+```
 
-1. Ensure both backend and frontend servers are running
-2. Open the frontend in your browser (default: http://localhost:3000)
-3. If everything is working correctly, you should see:
-   - A status message indicating the backend is connected
-   - The message from the backend: "You've successfully integrated the backend!"
-   - The current backend URL being used
+Update ECS service:
+
+```bash
+aws ecs update-service \
+  --cluster devops-cluster \
+  --service frontend-service \
+  --force-new-deployment
+```
+
+---
 
 ## API Endpoints
 
-- `GET /api/health`: Health check endpoint
-  - Returns: `{"status": "healthy", "message": "Backend is running successfully"}`
+### Health Check
 
-- `GET /api/message`: Get the integration message
-  - Returns: `{"message": "You've successfully integrated the backend!"}`
+```http
+GET /api/health
+```
+
+Response:
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+### Message Endpoint
+
+```http
+GET /api/message
+```
+
+Response:
+
+```json
+{
+  "message": "You've successfully integrated the backend!"
+}
+```
+
+---
+
+## Terraform Resources Created
+
+* VPC
+* Public Subnets
+* Internet Gateway
+* Route Tables
+* Security Groups
+* Application Load Balancer
+* Target Groups
+* Listener Rules
+* ECS Cluster
+* ECS Services
+* ECS Task Definitions
+* IAM Roles
+* CloudWatch Log Groups
+
+---
+
+## Local Development
+
+### Backend
+
+```bash
+cd backend
+
+python -m venv venv
+
+source venv/bin/activate
+
+pip install -r requirements.txt
+
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+Frontend:
+
+```text
+http://localhost:3000
+```
+
+Backend:
+
+```text
+http://localhost:8000
+```
+
+---
+
+## Key Learnings
+
+* Docker image creation and management
+* Amazon ECR workflows
+* ECS Fargate deployment patterns
+* Application Load Balancer routing
+* Terraform Infrastructure as Code
+* Cloud-native networking concepts
+* IAM roles and permissions
+* Remote Terraform state management
+* Full-stack application deployment on AWS
+
+---
+
+## Future Improvements
+
+* HTTPS using ACM certificates
+* Custom domain with Route 53
+* CI/CD pipeline using GitHub Actions
+* ECS auto-scaling policies
+* Monitoring dashboards with CloudWatch
+* Blue/Green deployments
+* Multi-environment Terraform setup
+
+---
+
+## Author
+
+**Kinshuk Totla**
+
+Built as a cloud-native DevOps and AWS deployment project to demonstrate containerization, Infrastructure as Code, and production-style application deployment using Amazon ECS Fargate.
