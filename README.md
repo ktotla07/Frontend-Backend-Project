@@ -18,6 +18,28 @@ This project demonstrates the deployment of a modern full-stack application cons
 
 The goal of this project was to build and deploy a scalable cloud-native application while following DevOps best practices.
 
+## Architecture Diagram
+
+![Architecture](screenshots/architecture.png)
+
+---
+
+## Running Application
+
+![Application](screenshots/application.png)
+
+---
+
+## ECS Services
+
+![ECS Services](screenshots/ECS-Services.png)
+
+---
+
+## Target Groups
+
+![Target Groups](screenshots/targetgroup.png)
+
 ---
 
 ## Architecture
@@ -288,4 +310,8 @@ http://localhost:8000
 
 **Kinshuk Totla**
 
+<<<<<<< HEAD
 Built as a cloud-native DevOps and AWS deployment project to demonstrate containerization, Infrastructure as Code, and production-style application deployment using Amazon ECS Fargate.
+=======
+Built as a cloud-native DevOps and AWS deployment project to demonstrate containerization, Infrastructure as Code, and production-style application deployment using Amazon ECS Fargate.
+>>>>>>> 4da00d1 (Complete AWS ECS Fargate full-stack deployment project)
